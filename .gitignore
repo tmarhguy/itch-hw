@@ -1,0 +1,57 @@
+# IDE / editor (local tooling — not part of the FPGA design)
+.antigravity-ide/
+.cursor/
+
+# -----------------------------------------------------------------------------
+# Vivado: ignore generated project siblings of *.xpr (regenerated on open/build).
+# Track instead: *.xpr, rtl/, constraints/, vivado/*.tcl, and any hand-written
+# IP you add under <project>.srcs (see note at bottom).
+# -----------------------------------------------------------------------------
+*.cache/
+*.hw/
+*.ip_user_files/
+*.runs/
+*.sim/
+*.srcs/
+.Xil/
+
+# Logs and run journals (any directory)
+*.jou
+*.log
+*.vdi
+*.vds
+*.pb
+*.wdf
+*.wpc
+*.backup.*
+*.backup
+
+# Implementation / synthesis products (large, machine- and run-specific)
+*.dcp
+*.bit
+*.bin
+*.ltx
+*.mmi
+*.rpt
+*.rpx
+*.dmp
+*.str
+*.xsa
+*.pdi
+*.ncd
+*.ngc
+
+# Simulation (XSim and common exports)
+xsim.dir/
+*.wdb
+*.vcd
+*.saif
+*.shm/
+*.awdb
+
+# -----------------------------------------------------------------------------
+# If you later add Xilinx IP or block designs inside the Vivado tree, do NOT
+# blanket-ignore <project>.srcs — commit sources_1/ip (*.xci), bd/, and your
+# XDC under constrs_1. This repo keeps RTL in rtl/ and XDC in constraints/, so
+# *.srcs/ stays fully ignored until that changes.
+# -----------------------------------------------------------------------------
