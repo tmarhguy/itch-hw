@@ -55,3 +55,4 @@ xsim.dir/
 # XDC under constrs_1. This repo keeps RTL in rtl/ and XDC in constraints/, so
 # *.srcs/ stays fully ignored until that changes.
 # -----------------------------------------------------------------------------
+/log/.obsidian
