@@ -2,6 +2,24 @@
 .antigravity-ide/
 .cursor/
 
+# Obsidian config (keep log/*.md; settings are local)
+log/.obsidian/
+
+# -----------------------------------------------------------------------------
+# Python / cocotb simulation (regenerate: sim/cocotb/run_tests.cmd or make)
+# -----------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+
+sim/cocotb/sim_build/
+sim/results/
+
 # -----------------------------------------------------------------------------
 # Vivado: ignore generated project siblings of *.xpr (regenerated on open/build).
 # Track instead: *.xpr, rtl/, constraints/, vivado/*.tcl, and any hand-written
@@ -49,10 +67,16 @@ xsim.dir/
 *.shm/
 *.awdb
 
+# OS / editor noise
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*~
+
 # -----------------------------------------------------------------------------
 # If you later add Xilinx IP or block designs inside the Vivado tree, do NOT
 # blanket-ignore <project>.srcs — commit sources_1/ip (*.xci), bd/, and your
 # XDC under constrs_1. This repo keeps RTL in rtl/ and XDC in constraints/, so
 # *.srcs/ stays fully ignored until that changes.
 # -----------------------------------------------------------------------------
-/log/.obsidian
