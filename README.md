@@ -5,7 +5,8 @@
 ![Live Ethernet](https://img.shields.io/badge/Ethernet-live_UDP-2ea043?style=for-the-badge)
 ![SystemVerilog](https://img.shields.io/badge/SystemVerilog-311B92?style=for-the-badge)
 ![FPGA](https://img.shields.io/badge/FPGA-Artix--7-DC2626?style=for-the-badge)
-![Vivado](https://img.shields.io/badge/Vivado-2024-7C3AED?style=for-the-badge)
+![Vivado](https://img.shields.io/badge/Vivado-2025.2-7C3AED?style=for-the-badge)
+![Timing](https://img.shields.io/badge/WNS-+1.552_ns-2ea043?style=for-the-badge)
 ![cocotb](https://img.shields.io/badge/cocotb-Python_tests-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![Verilator](https://img.shields.io/badge/Verilator-simulation-0F766E?style=for-the-badge)
 ![UDP](https://img.shields.io/badge/UDP-MoldUDP64-2563EB?style=for-the-badge)
@@ -50,6 +51,7 @@ In this repo I'm exploring what it looks like to feed an FPGA market data over E
 - [What is ITCH hardware?](#what-is-itch-hardware)
 - [The loop](#the-loop)
 - [Platform](#platform)
+- [Build status](#build-status)
 - [Run it](#run-it)
 - [Docs & notes](#docs--notes)
 
@@ -120,6 +122,46 @@ Every trading system runs the same story. Here, the whole arc lives on one FPGA 
 
 ---
 
+## Build status
+
+First clean Vivado run (2026-08-02): synthesis, implementation, and bitstream all passed on `xc7a100tcsg324-1` @ 100 MHz.
+
+| | |
+|---|---|
+| **WNS** | +1.552 ns |
+| **WHS** | +0.033 ns |
+| **Failed routes** | 0 |
+| **LUT / FF / BRAM** | 2% / 1% / 1% |
+| **Bitstream** | `itch-hw.runs/impl_1/nexys_a7_100t_top.bit` |
+
+<p align="center">
+  <img src="media/design_run_succ_synth.png" alt="Vivado Design Runs — synthesis and bitstream complete" width="640" />
+</p>
+
+<p align="center"><em>Design Runs — synth_1 and impl_1 complete · post-route timing closed</em></p>
+
+<p align="center">
+  <img src="media/proj_summ_util.png" alt="Vivado project summary — timing, utilization, power" width="640" />
+</p>
+
+<p align="center"><em>Project summary — WNS +1.552 ns · ~2% LUT on Artix-7 100T</em></p>
+
+<p align="center">
+  <img src="media/synth_design_diagram.png" alt="Synthesized design — Ethernet and LED pin assignments on package view" width="640" />
+</p>
+
+<p align="center"><em>Synthesized design — RMII Ethernet and status LEDs mapped to Nexys A7 pins</em></p>
+
+<p align="center">
+  <img src="media/impl_design_diagram.png" alt="Implemented design — eth ingress, mold unwrap, ITCH core, 7-segment display" width="640" />
+</p>
+
+<p align="center"><em>Implemented hierarchy — RMII ingress → MoldUDP64 → ITCH core → display</em></p>
+
+Full screenshots and notes: [log/2026-08-02 - Successful Synthesis - Implementation - Bitstream.md](log/2026-08-02%20-%20Successful%20Synthesis%20-%20Implementation%20-%20Bitstream.md) · [docs/metrics.md](docs/metrics.md)
+
+---
+
 ## Run it
 
 **Simulate** (core only, no PHY):
@@ -155,8 +197,9 @@ python tools/send_itch_udp.py
 |---|---|
 | [docs/architecture.md](docs/architecture.md) | Data path, order book, BBO timing |
 | [docs/board_eth_setup.md](docs/board_eth_setup.md) | Cable, LEDs, bench setup |
-| [docs/metrics.md](docs/metrics.md) | Latency numbers |
+| [docs/metrics.md](docs/metrics.md) | Timing, utilization, latency numbers |
 | [log/](log/) | Design notes and lab journal |
+| [log/2026-08-02 - Successful Synthesis - Implementation - Bitstream.md](log/2026-08-02%20-%20Successful%20Synthesis%20-%20Implementation%20-%20Bitstream.md) | First clean Vivado build (screenshots) |
 
 ---
 
