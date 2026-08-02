@@ -47,6 +47,7 @@ In this repo I'm exploring what it looks like to feed an FPGA market data over E
 
 ## Contents
 
+- [At a glance](#at-a-glance)
 - [What this repo does](#what-this-repo-does)
 - [What is ITCH hardware?](#what-is-itch-hardware)
 - [The loop](#the-loop)
@@ -55,7 +56,22 @@ In this repo I'm exploring what it looks like to feed an FPGA market data over E
 - [Run it](#run-it)
 - [Docs & notes](#docs--notes)
 
----
+
+
+### At a glance
+
+*Last Vivado build: 2026-08-02 · `USE_ETH=1` · Vivado 2025.2*
+
+| | |
+|---|---|
+| **Timing** | **Met** @ 100 MHz — WNS **+1.552 ns**, WHS **+0.033 ns**, 0 failed routes |
+| **Fabric** | LUT **2%** · FF **1%** · BRAM **1%** · power **~0.117 W** |
+| **Sim latency** | Last byte → `record_valid` **3 cy** (30 ns) · → `bbo_valid` **6 cy** (60 ns) on Add |
+| **Bitstream** | `itch-hw.runs/impl_1/nexys_a7_100t_top.bit` · Vivado **2025.2** |
+
+Details: [docs/metrics.md](docs/metrics.md) · [build log](log/2026-08-02%20-%20Successful%20Synthesis%20-%20Implementation%20-%20Bitstream.md)
+
+
 
 ## What this repo does
 
@@ -124,41 +140,21 @@ Every trading system runs the same story. Here, the whole arc lives on one FPGA 
 
 ## Build status
 
-First clean Vivado run (2026-08-02): synthesis, implementation, and bitstream all passed on `xc7a100tcsg324-1` @ 100 MHz.
-
-| | |
-|---|---|
-| **WNS** | +1.552 ns |
-| **WHS** | +0.033 ns |
-| **Failed routes** | 0 |
-| **LUT / FF / BRAM** | 2% / 1% / 1% |
-| **Bitstream** | `itch-hw.runs/impl_1/nexys_a7_100t_top.bit` |
+First clean Vivado run (2026-08-02): synthesis, implementation, and bitstream passed — **timing closed** at 100 MHz. See [At a glance](#at-a-glance) for numbers; full tables in [docs/metrics.md](docs/metrics.md).
 
 <p align="center">
   <img src="media/design_run_succ_synth.png" alt="Vivado Design Runs — synthesis and bitstream complete" width="640" />
 </p>
 
-<p align="center"><em>Design Runs — synth_1 and impl_1 complete · post-route timing closed</em></p>
+<p align="center"><em>Design Runs — synth_1 and impl_1 complete</em></p>
 
 <p align="center">
-  <img src="media/proj_summ_util.png" alt="Vivado project summary — timing, utilization, power" width="640" />
-</p>
-
-<p align="center"><em>Project summary — WNS +1.552 ns · ~2% LUT on Artix-7 100T</em></p>
-
-<p align="center">
-  <img src="media/synth_design_diagram.png" alt="Synthesized design — Ethernet and LED pin assignments on package view" width="640" />
-</p>
-
-<p align="center"><em>Synthesized design — RMII Ethernet and status LEDs mapped to Nexys A7 pins</em></p>
-
-<p align="center">
-  <img src="media/impl_design_diagram.png" alt="Implemented design — eth ingress, mold unwrap, ITCH core, 7-segment display" width="640" />
+  <img src="media/impl_design_diagram.png" alt="Implemented design hierarchy" width="640" />
 </p>
 
 <p align="center"><em>Implemented hierarchy — RMII ingress → MoldUDP64 → ITCH core → display</em></p>
 
-Full screenshots and notes: [log/2026-08-02 - Successful Synthesis - Implementation - Bitstream.md](log/2026-08-02%20-%20Successful%20Synthesis%20-%20Implementation%20-%20Bitstream.md) · [docs/metrics.md](docs/metrics.md)
+Screenshots: [build log](log/2026-08-02%20-%20Successful%20Synthesis%20-%20Implementation%20-%20Bitstream.md)
 
 ---
 
@@ -183,10 +179,10 @@ vivado -mode batch -source vivado/add_sources.tcl
 vivado -mode batch -source vivado/build.tcl
 ```
 
-**Live on the bench** — PC at `192.168.1.1/24`, cable to RJ45, then:
+**Live on the bench** — see [docs/board_eth_setup.md](docs/board_eth_setup.md), then:
 
 ```text
-python tools/send_itch_udp.py
+python tools/bench_check.py
 ```
 
 ---
