@@ -27,11 +27,15 @@ sim/results/
 # -----------------------------------------------------------------------------
 *.cache/
 *.hw/
+*.gen/
 *.ip_user_files/
 *.runs/
 *.sim/
 *.srcs/
 .Xil/
+
+# Optional Xilinx IP export (vivado/create_eth_ip.tcl)
+ip/
 
 # Logs and run journals (any directory)
 *.jou
