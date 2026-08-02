@@ -1,4 +1,4 @@
-# itch-hw
+# ITCH FPGA Hardware Market-Data Parser
 
 ![ITCH 5.0](https://img.shields.io/badge/NASDAQ_ITCH-5.0-7C3AED?style=for-the-badge)
 ![Nexys A7](https://img.shields.io/badge/Nexys_A7-100T-2563EB?style=for-the-badge)
@@ -10,7 +10,7 @@
 ![Verilator](https://img.shields.io/badge/Verilator-simulation-0F766E?style=for-the-badge)
 ![UDP](https://img.shields.io/badge/UDP-MoldUDP64-2563EB?style=for-the-badge)
 
-**NASDAQ ITCH 5.0 hardware market-data parser** · [github.com/tmarhguy/itch-hw](https://github.com/tmarhguy/itch-hw)
+SystemVerilog · cocotb · Python · Vivado · [github.com/tmarhguy/itch-hw](https://github.com/tmarhguy/itch-hw)
 
 ---
 
