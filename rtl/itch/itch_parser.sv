@@ -1,33 +1,36 @@
-// Placeholder ITCH parser — replace with real UDP/ITCH logic; keeps top synthesizable today.
+// Legacy name: ITCH byte pipeline (replaces counter stub).
 `timescale 1ns / 1ps
+
+import itch_types::*;
 
 module itch_parser (
     input  logic        clk,
     input  logic        rst,
+    input  logic [ 7:0] byte_in,
+    input  logic        byte_valid,
+    output logic        byte_ready,
+    output itch_record_t record,
+    output logic        record_valid,
+    output logic        parse_error,
+    // Board-friendly debug (BBO bid price when wired through itch_hw_core)
     output logic [31:0] stock_price_hex,
     output logic        msg_valid,
     output logic        error_flag
 );
 
-  // Visible bring-up pattern until the parser is implemented.
-  logic [27:0] tick;
+  itch_pipeline u_pipe (
+      .clk          (clk),
+      .rst          (rst),
+      .byte_in      (byte_in),
+      .byte_valid   (byte_valid),
+      .byte_ready   (byte_ready),
+      .record       (record),
+      .record_valid (record_valid),
+      .parse_error  (parse_error)
+  );
 
-  always_ff @(posedge clk) begin
-    if (rst) begin
-      tick             <= '0;
-      stock_price_hex  <= 32'h0012_3456;
-      msg_valid        <= 1'b0;
-      error_flag       <= 1'b0;
-    end else begin
-      tick <= tick + 28'd1;
-      if (tick == 28'd99_999_999) begin
-        tick            <= '0;
-        stock_price_hex <= stock_price_hex + 32'd1;
-        msg_valid       <= 1'b1;
-      end else begin
-        msg_valid <= 1'b0;
-      end
-    end
-  end
+  assign stock_price_hex = record.price;
+  assign msg_valid       = record_valid;
+  assign error_flag      = parse_error;
 
 endmodule
