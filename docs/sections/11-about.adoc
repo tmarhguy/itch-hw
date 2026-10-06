@@ -1,0 +1,32 @@
+[#about]
+== About This Manual
+
+Meta information about this manual — deliberately placed after the
+work itself.
+
+This manual is the running engineering reference for the project —
+message formats, pipeline decisions, and measured numbers as they land.
+It is the companion to the concise, GitHub-facing `README.md`:
+
+* `README.md` — project identity, status, and quick start.
+* `docs/*.md` — normative companions (`architecture.md`, `metrics.md`,
+`board_eth_setup.md`).
+* `log/` — dated lab journal (design notes, bring-up narrative).
+* `docs/` (this manual) — architecture, design, verification, and
+results in engineering-manual style.
+
+=== Conventions
+
+Conventions used throughout:
+
+* `monospace` marks commands, file paths, identifiers, and literals.
+* Unmeasured values are written as `TBD (unmeasured)` — never silently estimated.
+* Clocks are 100 MHz system + 50 MHz `eth_refclk` unless noted.
+* Characterization is post-route (`impl_1`) unless a subsection states otherwise.
+* Normative detail lives alongside this manual as Markdown
+(`docs/*.md`, `log/`) and is linked, not duplicated.
+* Figures in `docs/images/` are staged copies; sources of truth stay
+in `media/` (see `scripts/build-docs.sh`).
+
+TIP: New here? Start with <<introduction,Introduction>> for scope and
+reading order, then <<architecture,Architecture>> for the system overview.

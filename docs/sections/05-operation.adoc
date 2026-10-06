@@ -1,0 +1,60 @@
+[#operation]
+== Operation
+
+How to bring the board up and what running looks like: the
+data-in → decision → data-out loop closed on hardware.
+
+=== The loop
+
+[source,text]
+----
+MARKET DATA IN          DECISION              OUT
+─────────────         ──────────            ───
+Ethernet / UDP   →    Parse ITCH      →    BBO + LEDs
+Mold-wrapped bytes    Order book           7-segment
+                      Best bid / offer
+----
+
+. Market data in. Live traffic hits the LAN8720 PHY. RMII RX, UDP
+filter, Mold unwrap — ITCH bytes reach the parser without a CPU `memcpy`.
+. Decision. The 8-bit streaming FSM decodes symbol, side, price,
+quantity, and timestamp. The dual 512-slot BRAM book applies the event
+and recomputes BBO — under 10 clock cycles on the Add path at 100 MHz.
+. Out. LED15 = link up. LED0/LED1 pulse on parse and BBO. The 7-segment
+shows the best bid. `LED[14:4]` mirrors the low 11 bits of best bid.
+
+=== Bring-up procedure
+
+. Program — `USE_ETH=1` bitstream from `vivado/build.tcl` via Hardware
+Manager (`itch-hw.runs/impl_1/nexys_a7_100t_top.bit`, `xc7a100t_0` JTAG).
+. PC network — adapter on the Nexys cable: IP `192.168.1.1`, mask
+`255.255.255.0`, gateway empty. Ignore “no internet”.
+. Cable and link — RJ45 to board, power on, wait ~5 s. LED15 = link up.
+. Send traffic —
++
+[source,bash]
+----
+pip install -r sim/requirements.txt
+python tools/bench_check.py
+----
++
+or `python tools/send_itch_udp.py --repeat 10`.
+. Confirm — LED0 parse pulse, LED1 BBO pulse, 7-seg shows best bid
+(price `500000` in the bench script).
+
+TIP: When the 7-seg looks wrong, press center `rst` and resend before
+assuming the book is wrong. Most bench surprises are link/broadcast
+issues (see <<interfaces,Interfaces>> troubleshooting), not RTL.
+
+=== Reset and error behaviour
+
+* `rst_sync` clears parser buffer, book bests, scan state, and display
+scan. LEDs 2/3 clear until the next error.
+* `parse_error` (LED2): unknown message type or undecodable buffer.
+* `book_error` (LED3): execute/cancel on an empty slot or unknown message.
+* Stretched pulses (LED0/LED1) are human-visible; sim `record_valid` /
+`bbo_valid` are single-cycle — do not compare bench LED timing to
+cocotb cycle counts directly.
+
+NOTE: The bench path is lab replay only, not production MoldUDP64
+multicast. Full architecture: <<architecture,Architecture>>.

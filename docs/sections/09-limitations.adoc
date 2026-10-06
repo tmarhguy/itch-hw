@@ -1,0 +1,40 @@
+[#limitations]
+== Known Limitations
+
+Honest boundaries: what the system is, and what it is not.
+This chapter overrides any optimistic reading of earlier chapters.
+
+=== What is real today
+
+* RMII ingress with CDC + minimal IPv4/UDP filter (lab port 50000).
+* MoldUDP64 length-prefix unwrap to raw ITCH bytes.
+* Streaming 8-bit FSM for Add / Execute / Cancel → `itch_record_t`.
+* Dual 512-slot BRAM book with incremental Add BBO and ≤512-cycle
+rescan on Exec/Cancel at the best.
+* BBO outputs (`bid/ask price + shares`, `bbo_valid`) with parse/book
+error flags.
+* LED + 7-seg proof on Nexys A7-100T (`USE_ETH=1` bitstream).
+* cocotb gates vs Python golden model, including 10M-message Verilator
+stress entry point; post-route timing closed at 100 MHz.
+
+=== What is explicitly not here
+
+* Production MoldUDP64 multicast: lab broadcast replay only.
+* ARP, IP TX, or UDP TX — the board never replies; use broadcast.
+* Multi-symbol books: single symbol in v1.
+* Message types beyond A / E / X (no crosses, halts, or admin).
+* Full 64-bit order identity: slots key on `order_ref[8:0]`, so upper-bit
+collisions alias — size test traffic accordingly.
+* Exchange sequencing, matching, or order-entry back out.
+
+=== Limits to design around
+
+* A byte is parsed if and only if the UDP dest port matches and the
+Mold length framing is intact; anything else is dropped to `StIdle`.
+* Corruption is a loud error (`parse_error` / `book_error`), never a
+degraded read.
+* Published numbers are measured in this tree (WNS +1.552 ns,
+~2% LUT, 3 cy parse + 6 cy BBO on Add). Unmeasured values are
+`TBD (unmeasured)`.
+* Bench LED timing ≠ sim cycle timing; reconcile Add-path <10-cycle
+claims after bench traffic capture.

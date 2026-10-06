@@ -20,6 +20,9 @@ env/
 sim/cocotb/sim_build/
 sim/results/
 
+# Generated docs (regenerate: make docs)
+build/
+
 # -----------------------------------------------------------------------------
 # Vivado: ignore generated project siblings of *.xpr (regenerated on open/build).
 # Track instead: *.xpr, rtl/, constraints/, vivado/*.tcl, and any hand-written

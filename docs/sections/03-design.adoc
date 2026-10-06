@@ -1,0 +1,99 @@
+[#design]
+== Design
+
+Message formats, parser, order book, and BBO update.
+This is the conceptual companion to the Vivado detail in
+<<implementation,Implementation>>.
+
+=== ITCH subset
+
+NASDAQ ITCH 5.0, big-endian on the wire. Only three messages are
+implemented (single symbol, lab scope):
+
+.Message lengths (`rtl/itch/itch_types.sv`)
+[cols="1,1,2",options="header"]
+|===
+| Type | Length | Meaning
+
+| `A` (`0x41`)
+| 36 B
+| Add order: side, shares, stock, price
+
+| `E` (`0x45`)
+| 31 B
+| Execute: order_ref + executed shares + match number
+
+| `X` (`0x58`)
+| 23 B
+| Cancel: order_ref + canceled shares (0 = full)
+|===
+
+`msg_len_bytes()` and `msg_from_char()` map the leading type byte
+to length and enum (`MsgAdd/MsgExec/MsgCancel/MsgNone`).
+`itch_record_t` carries `msg`, 48-bit `timestamp_ns`, 64-bit
+`order_ref` and `stock`, `side` (`B`=buy/`S`=sell), 32-bit `price`,
+`shares`, and `aux_shares` (exec/cancel quantity).
+
+MoldUDP64 framing (`rtl/mold/moldudp64_rx.sv`): each ITCH message is
+preceded by a 16-bit big-endian length. `StHdr` collects the 2-byte
+prefix, `StMsg` streams exactly that many bytes to the parser.
+`udp_payload_ready = itch_byte_ready && (state != StSkip)`.
+
+=== Parser
+
+`rtl/itch/itch_byte_fsm.sv` — streaming 8-bit FSM:
+
+[source,text]
+----
+StIdle -> StCollect -> StDecode -> StIdle
+  type/len    36 B buffer     assemble itch_record_t
+----
+
+* `StIdle`: `msg_len_bytes(byte_in)`; unknown type → `parse_error`.
+* `StCollect`: pack bytes into 36-byte `msg_buf` (avoids unpacked-array
+tool quirks); `byte_ready = (state != StDecode)`.
+* `StDecode`: big-endian field extraction (timestamp bytes 5–10,
+order_ref 11–18, side byte 19, shares/price windows per type);
+`record_valid` pulses 1 cycle after assembly — ≤3 cycles after the
+last byte.
+* Timestamps pass through; matching/exchange sequencing is out of scope.
+
+`rtl/itch/itch_pipeline.sv` wires the FSM as the `itch_hw_core` front
+end. (`rtl/itch/itch_parser.sv`, `rtl/book/bbo_update.sv`, and
+`rtl/book/lut3_price_cmp.sv` are reserved/alternate helpers; the
+synthesized book path is `order_book.sv` below.)
+
+=== Order book and BBO
+
+`rtl/book/order_book.sv` — dual 512-slot BRAM, keyed by
+`order_ref[8:0]`:
+
+* Slot word: `{valid, price[31:0], shares[31:0]}` (65 b),
+`(* ram_style = "block" *) bid_mem/ask_mem`.
+* One registered-read + synchronous-write process per array
+(BRAM-friendly). Read address `raddr` stages the target slot one
+cycle before `apply_d`.
+* Add: write slot, incremental BBO compare (buy: `price > best_bid`;
+sell: `price < best_ask`), `bbo_valid` immediately — 6 cycles from
+`record_valid` in sim.
+* Execute/Cancel: decrement or invalidate; if the touched price equaled
+the current best, start a sequential rescan (≤512 cycles); otherwise
+`bbo_valid` immediately. Unknown slot or message → `book_error`.
+* Price compare intent is LUT-friendly (`lut3_price_cmp.sv`,
+Tomato-style truth tables); the committed path uses direct compares.
+
+Scan engine: `scan_active/scan_warm/scan_idx/raddr`, running best
+`run_bid/run_ask` accumulators, final commit to `best_bid/best_ask`
+plus `bbo_valid`. Reset clears all bests and scan state.
+
+=== Display mapping
+
+`rtl/display/seven_segment_ctrl.sv`: 8-digit multiplexed hex driver,
+active-low segments/anodes, `REFRESH_DIV=100_000` (1 kHz digit advance
+at 100 MHz). Input is `bbo_bid_price`; `digit_sel` selects each nibble
+with canonical segment patterns. Top level also fans
+`bbo_bid_price[10:0]` to `LED[14:4]` for a binary readback.
+
+WARNING: Single symbol only; `order_ref[8:0]` aliases references that
+differ in upper bits. That is a documented v1 limit, not a silent
+assumption — see <<limitations,Known Limitations>>.

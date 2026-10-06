@@ -1,0 +1,21 @@
+[#authors]
+== Authors
+
+The manual, RTL, verification, and lab journal are produced by the
+engineer behind the design.
+
+=== Tyrone Marhguy
+
+Computer Engineering '28, University of Pennsylvania.
+Independent FPGA work: ITCH parsing, order-book logic, and a public
+build log. Designer of the Tomato 32-bit computer; contributor to
+open-source EDA (LibreLane, Verilator, OpenROAD, OpenFPGA).
+
+* https://tmarhguy.com[Website,window=_blank]
+* https://github.com/tmarhguy[GitHub,window=_blank]
+* https://www.linkedin.com/in/tmarhguy/[LinkedIn,window=_blank]
+* mailto:tmarhguy@engineering.upenn.edu[Email]
+* mailto:tmarhguy@gmail.com[Email (personal)]
+
+Questions or collabs — reach out. Build log and projects at
+https://tmarhguy.com[tmarhguy.com,window=_blank].

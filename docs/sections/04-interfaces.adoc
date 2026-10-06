@@ -1,0 +1,110 @@
+[#interfaces]
+== Interfaces
+
+How operators and programs touch the system: board I/O, network port,
+bench tools, constraints, and build entry points.
+
+=== Board I/O
+
+.LEDs and display
+[cols="1,2",options="header"]
+|===
+| Output | Meaning
+
+| LED15
+| PHY link up (`lan8720_mdio` MDIO poll; wait ~5 s after cable connect)
+
+| LED0
+| ITCH message parsed (`record_valid`, stretched `24'hFF_FFFF`)
+
+| LED1
+| BBO updated (`bbo_valid`, stretched)
+
+| LED2
+| Parse error (`parse_error`)
+
+| LED3
+| Book error (`book_error`)
+
+| LED[14:4]
+| `bbo_bid_price[10:0]` binary readback
+
+| 7-seg (8-digit hex)
+| Best bid price (`bbo_bid_price` via `seven_segment_ctrl`)
+|===
+
+Order: LED15 first, then send traffic, then LED0/LED1 pulse.
+Center button `rst` re-arms the pipeline; resend after reset.
+
+Pin map lives in `constraints/nexys_a7_100t.xdc`
+(`xc7a100tcsg324-1`): `CLK100MHZ` E3, `rst` N17, cathodes
+`ca–cg` T10/R10/K16/K13/P15/T11/L18, anodes `an[0–7]`
+J17/J18/T9/J14/P14/T14/K2/U13, LEDs H17–V11, RMII
+`eth_mdc/mdio/rstn/crs_dv/rxd/txd/refclk` C9/A9/B3/D9/C11/D10/B9/A10/A8/D5.
+`constraints/nexys_a7_100t_eth.xdc` is the Ethernet-focused variant.
+
+=== Network port
+
+* Lab UDP broadcast `255.255.255.255:50000` (default `UDP_DST_PORT=50000`).
+* FPGA is RX-only: no ARP, no TX (`eth_txd=0`, `eth_txen=0`).
+* `udp_rx_minimal.sv` filters Eth → IPv4 (proto 17) → UDP dest-port match,
+then streams payload bytes. Non-matching frames return to `StIdle`.
+* `eth_ingress.sv` captures RMII nibbles on `eth_refclk`, toggles a frame
+flag on `crs_dv` fall, crosses via `byte_cdc_fifo`, and delimits frames
+with `frame_end` into the UDP filter.
+
+=== Bench tools
+
+[source,bash]
+----
+# Full bring-up helper (IP check + LED guide + traffic)
+python tools/bench_check.py
+python tools/bench_check.py --repeat 10 --skip-send
+
+# Minimal sender (broadcast Mold/ITCH burst)
+python tools/send_itch_udp.py --repeat 10
+python tools/send_itch_udp.py --host 255.255.255.255 --port 50000 --repeat 3
+----
+
+Both tools build on `sim/python/itch_ref.py` encoders: two Adds
+(order 1 buy 100 @ 50_0000, order 2 sell 50 @ 50_1000) plus an Execute
+(order 1, 25 shares), wrapped with `mold_wrap()` (2-byte BE length
+prefix per message).
+
+.Tool options
+[cols="1,2",options="header"]
+|===
+| Command | Effect
+
+| `bench_check.py [--repeat N] [--skip-send]`
+| check `192.168.1.x` adapter, print LED guide, send N bursts
+
+| `send_itch_udp.py [--host] [--port] [--repeat N]`
+| send N Mold/ITCH UDP bursts; broadcast avoids ARP
+|===
+
+=== Build and sim entry points
+
+[source,bash]
+----
+# Simulate (core only, no PHY)
+cd sim/cocotb && pip install -r ../requirements.txt && make
+
+# Stress (10M messages, Verilator)
+make stress SIM=verilator STRESS_MSGS=10000000
+
+# Build and program (Ethernet bitstream)
+vivado -mode batch -source vivado/add_sources.tcl
+vivado -mode batch -source vivado/build.tcl
+----
+
+* `vivado/add_sources.tcl` — source list for the `.xpr`.
+* `vivado/build.tcl` — sets `USE_ETH=1`, runs `synth_1` + `impl_1` to
+`write_bitstream` (`-jobs 8`), prints timing/util report paths.
+* `vivado/build_eth.tcl`, `create_eth_ip.tcl`, `build_windows.ps1` —
+variants/helpers for Ethernet builds on Windows.
+* `sim/cocotb/Makefile`, `run_tests.py`, `run_tests.cmd` — cocotb runners.
+
+CAUTION: Broadcasting to `255.255.255.255` is correct for the
+point-to-point bench. Do not point production multicast at this
+RX-only filter — it will be dropped by the port check.

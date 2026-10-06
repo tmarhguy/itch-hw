@@ -1,0 +1,82 @@
+[#implementation]
+== Implementation
+
+Vivado synthesis, place-and-route, and bitstream detail.
+`docs/metrics.md` is normative for the numbers; this chapter
+summarizes them and states what was built.
+
+=== Build snapshot
+
+First clean end-to-end run with live Ethernet ingress (`USE_ETH=1`).
+
+[cols="1,2",options="header"]
+|===
+| Item | Value
+
+| Date of build
+| 2026-08-02
+
+| Toolchain
+| Vivado 2025.2
+
+| FPGA part
+| `xc7a100tcsg324-1` (Nexys A7-100T, Artix-7)
+
+| Top module
+| `nexys_a7_100t_top`
+
+| Clock
+| 100 MHz (`sys_clk_pin`, 10 ns) + 50 MHz `eth_refclk`
+
+| Generics
+| `USE_ETH=1`, `UDP_DST_PORT=50000`
+
+| Runs
+| `synth_1` ✓ · `impl_1` ✓ · `write_bitstream` ✓
+
+| Bitstream
+| `itch-hw.runs/impl_1/nexys_a7_100t_top.bit`
+|===
+
+.Project summary — timing closed with headroom on Artix-7 100T
+image::proj_summ_util.png[Project summary timing and utilization,align=center,width=640]
+
+=== Reports on disk
+
+`vivado/build.tcl` (batch from repo root):
+
+[source,tcl]
+----
+vivado -mode batch -source vivado/add_sources.tcl
+vivado -mode batch -source vivado/build.tcl
+----
+
+`build.tcl` sets `generic {USE_ETH=1}` on `sources_1`, launches
+`synth_1` then `impl_1 -to_step write_bitstream -jobs 8`, and prints:
+
+* `*.timing_summary_routed.rpt` → WNS, TNS, WHS, THS
+* `*.utilization_placed.rpt` → LUT, FF, BRAM counts
+* `*.power_routed.rpt` → total power
+
+under `itch-hw.runs/impl_1/`. Update <<performance,Performance>> and
+`docs/metrics.md` badges from those reports.
+
+=== What the diagrams show
+
+* `synth_design_diagram.png` — package view: RMII Ethernet pins
+(`eth_mdc/mdio/rxd/crs_dv`) and status LEDs on the Nexys ballout.
+* `impl_design_diagram.png` — placed hierarchy: `gen_eth.u_eth`
+(`eth_ingress`) → `gen_eth.u_mold` (`moldudp64_rx`) → `u_core`
+(`itch_hw_core`) → `u_display` (`seven_segment_ctrl`).
+* `design_run_succ_synth.png` — Design Runs with `synth_1`/`impl_1`
+green; `bitstream_dialog.png` — Program Device ready on `xc7a100t_0`.
+
+.Synthesized package pins for Ethernet and LEDs
+image::synth_design_diagram.png[Synth package view,align=center,width=640]
+
+.Program Device — bitstream generated, board connected
+image::bitstream_dialog.png[Program device dialog,align=center,width=520]
+
+WARNING: Never hand-edit generated `itch-hw.runs/` reports to change
+the numbers. Rebuild with `vivado/build.tcl` and copy the routed
+values — the only writers that preserve the timing-closure claim.

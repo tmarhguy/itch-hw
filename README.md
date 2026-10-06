@@ -13,6 +13,8 @@
 
 SystemVerilog · cocotb · Python · Vivado · [github.com/tmarhguy/itch-hw](https://github.com/tmarhguy/itch-hw)
 
+**Technical manual:** [tmarhguy.github.io/itch-hw](https://tmarhguy.github.io/itch-hw) — source in [`docs/index.adoc`](docs/index.adoc), or build locally with `make docs` and read at `http://localhost:8000` via `make docs-open`.
+
 ---
 
 ### Why this exists
@@ -191,6 +193,7 @@ python tools/bench_check.py
 
 | Doc | What's in it |
 |---|---|
+| [Technical manual](https://tmarhguy.github.io/itch-hw) ([source](docs/index.adoc), `make docs` → `localhost:8000`) | Full reference: architecture, design, verification, measured numbers |
 | [docs/architecture.md](docs/architecture.md) | Data path, order book, BBO timing |
 | [docs/board_eth_setup.md](docs/board_eth_setup.md) | Cable, LEDs, bench setup |
 | [docs/metrics.md](docs/metrics.md) | Timing, utilization, latency numbers |

@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="200" viewBox="0 0 720 200" font-family="sans-serif">
+  <defs>
+    <style>
+      .box { fill: #f6f8fa; stroke: #1d4e89; stroke-width: 2; rx: 8; }
+      .lbl { font-size: 14px; font-weight: 700; fill: #111; }
+      .sub { font-size: 11px; fill: #555; }
+      .arr { stroke: #24292f; stroke-width: 2; fill: none; marker-end: url(#ah); }
+    </style>
+    <marker id="ah" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 z" fill="#24292f"/>
+    </marker>
+  </defs>
+  <rect x="8" y="60" width="128" height="80" rx="8" class="box"/>
+  <text x="72" y="92" text-anchor="middle" class="lbl">RMII ingress</text>
+  <text x="72" y="108" text-anchor="middle" class="sub">50 MHz → CDC</text>
+  <text x="72" y="122" text-anchor="middle" class="sub">UDP :50000</text>
+  <rect x="160" y="60" width="128" height="80" rx="8" class="box"/>
+  <text x="224" y="92" text-anchor="middle" class="lbl">Mold unwrap</text>
+  <text x="224" y="108" text-anchor="middle" class="sub">len-prefix</text>
+  <text x="224" y="122" text-anchor="middle" class="sub">ITCH bytes</text>
+  <rect x="312" y="60" width="128" height="80" rx="8" class="box"/>
+  <text x="376" y="92" text-anchor="middle" class="lbl">ITCH parse</text>
+  <text x="376" y="108" text-anchor="middle" class="sub">A / E / X FSM</text>
+  <text x="376" y="122" text-anchor="middle" class="sub">3 cy record</text>
+  <rect x="464" y="60" width="128" height="80" rx="8" class="box"/>
+  <text x="528" y="92" text-anchor="middle" class="lbl">Order book</text>
+  <text x="528" y="108" text-anchor="middle" class="sub">512-slot BRAM</text>
+  <text x="528" y="122" text-anchor="middle" class="sub">BBO 6 cy</text>
+  <rect x="616" y="60" width="96" height="80" rx="8" class="box"/>
+  <text x="664" y="92" text-anchor="middle" class="lbl">Display</text>
+  <text x="664" y="108" text-anchor="middle" class="sub">LEDs</text>
+  <text x="664" y="122" text-anchor="middle" class="sub">7-seg bid</text>
+  <line x1="136" y1="100" x2="160" y2="100" class="arr"/>
+  <line x1="288" y1="100" x2="312" y2="100" class="arr"/>
+  <line x1="440" y1="100" x2="464" y2="100" class="arr"/>
+  <line x1="592" y1="100" x2="616" y2="100" class="arr"/>
+  <text x="360" y="30" text-anchor="middle" class="lbl">100 MHz core — no host in the hot path</text>
+  <text x="360" y="170" text-anchor="middle" class="sub">eth_ingress → moldudp64_rx → itch_hw_core → seven_segment_ctrl</text>
+</svg>

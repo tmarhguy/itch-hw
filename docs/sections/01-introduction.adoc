@@ -1,0 +1,104 @@
+[#introduction]
+== Introduction
+
+This chapter defines what the system is, what this manual covers,
+and how to navigate the rest of the document.
+
+=== Purpose
+
+NASDAQ's ITCH feed is a binary stream of Add, Execute, and Cancel
+messages describing how the open book changes in real time.
+Exchanges do not wait for a software stack.
+
+This project implements the hardware column: bytes arrive over
+Ethernet (UDP, Mold-wrapped ITCH) into a Nexys A7-100T, a streaming
+parser turns them into structured order events, a dual-sided on-chip
+order book updates and recomputes best bid / best offer (BBO), and
+LEDs plus the 7-segment display show the answer on silicon.
+
+This manual is the engineering reference for that system.
+It records design intent, message formats, interfaces, verification
+strategy, Vivado implementation detail, and measured behaviour in one
+numbered document.
+
+The fastest way to see what the system is: the bench photo and links
+at the top of this manual, plus `media/a7_fpga.jpeg` in the tree.
+
+=== Why this exists
+
+In conversations with business friends — especially Wharton students —
+NASDAQ comes up a lot. The argument starts with the open book: visible
+bids and asks. The goal is to make the fastest, best decision to buy at
+the lowest price or sell at the highest.
+
+From a computer engineering perspective, a conventional Von Neumann CPU
+is a poor fit for that rapid decision-making — fetch, decode, move data
+through memory, repeat (the Von Neumann bottleneck). To skip the OS and
+avoid unnecessary data movement, the decision belongs in a hardened
+logic block that tells the CPU what it did: accurate, deterministic,
+and fast.
+
+FPGAs sit in the middle: reconfigurability while iterating, hardened
+logic on paths that must be fast and deterministic. Flash a new
+bitstream, test, repeat — no fab run. That is what this repo explores:
+feed an FPGA market data over Ethernet, watch real decision-making
+happen in hardware, and move toward seeing trades happen one step at
+a time.
+
+=== Scope
+
+The manual covers:
+
+* system architecture and build order (see <<architecture,Architecture>>)
+* ITCH message subset and book/BBO design (see <<design,Design>>)
+* board, network, and tool interfaces (see <<interfaces,Interfaces>>)
+* bring-up and operation model (see <<operation,Operation>>)
+* correctness strategy with cocotb golden model (see <<verification,Verification>>)
+* Vivado synthesis/implementation/bitstream (see <<implementation,Implementation>>)
+* measured timing, utilization, and latency (see <<performance,Performance>>)
+* honest limits (see <<limitations,Known Limitations>>)
+* dated lab journal (see <<lab-journal,Lab Journal>>)
+
+It does not replace:
+
+* `README.md` — quick start and repository map
+* `docs/architecture.md` — data path, order book, BBO timing
+* `docs/board_eth_setup.md` — cable, LEDs, bench setup
+* `docs/metrics.md` — timing, utilization, latency numbers
+* `log/` — full design notes and lab journal text
+* RTL comments — per-module implementation notes in `rtl/`
+
+=== How to read this manual
+
+Read chapters in order the first time.
+Chapters 1–2 give context; chapters 3–5 give the working model;
+chapters 6–8 give the evidence the hardware behaves as claimed.
+
+Each chapter is self-contained enough to be entered directly from the
+sidebar once the overview in <<architecture,Architecture>> is familiar.
+
+=== Conventions
+
+.Normal cross-reference and link usage
+* Internal references look like this: <<verification,Verification>>.
+* External links look like this: https://tmarhguy.com[author site].
+* Inline code uses monospace, e.g. `record_valid`, `order_book.sv`, `USE_ETH=1`.
+* File paths are repository-relative, e.g. `rtl/top/nexys_a7_100t_top.sv`.
+
+.List conventions
+* Unordered lists state properties or inventories.
+* Ordered lists state procedures where sequence matters:
+
+. Program the `USE_ETH=1` bitstream.
+. Confirm link on LED15.
+. Send Mold/ITCH UDP traffic and watch LED0/LED1.
+
+NOTE: Honest status is a project rule.
+Roadmap items stay labelled roadmap; unverified claims stay out of
+this manual. Where a number has not been measured it is written
+`TBD (unmeasured)`.
+
+TIP: The sidebar on the left is collapsible.
+Select a chapter title to navigate; select its arrow control to
+expand or collapse its subsections without leaving the page.
+On narrow screens the sidebar stacks above the content.

@@ -1,0 +1,57 @@
+[#lab-journal]
+== Lab Journal
+
+Dated bench notes. `log/` holds the full text; this chapter
+summarizes each entry and links the source so the manual never forks
+the journal.
+
+=== 2026-08-02 — Successful Synthesis, Implementation, Bitstream
+
+First clean end-to-end Vivado run for the live UDP path (not just the
+cocotb core) after several RTL iterations on ingress, Mold unwrap,
+parser, and book.
+
+* `synth_1` + `impl_1` green; `write_bitstream` produced
+`itch-hw.runs/impl_1/nexys_a7_100t_top.bit`.
+* Post-route: WNS +1.552 ns, WHS +0.033 ns, 0 failed routes,
+~0.117 W, LUT 2% / FF 1% / BRAM 1%.
+* Hierarchy confirmed: `gen_eth.u_eth` → `gen_eth.u_mold` →
+`u_core` → `u_display`; package pins match the Nexys ballout.
+* Hardware Manager sees `xc7a100t_0`, ready to program.
+
+.Design Runs — synthesis and bitstream complete
+image::design_run_succ_synth.png[Design runs complete,align=center,width=640]
+
+Full text with all four screenshots:
+`log/2026-08-02 - Successful Synthesis - Implementation - Bitstream.md`.
+
+Public companion on the engineering log:
+https://tmarhguy.com/writing/2026-08-02-successful-synthesis-implementation-bitstream/[Successful Synthesis - Implementation - Bitstream,window=_blank]
+— first clean Vivado build for the Nexys A7 ITCH pipeline with `USE_ETH=1`.
+
+=== 2026-08-02 — Ethernet Cable
+
+Market data must flow continuously so the FPGA can act — the full
+`data in → decision → data out` path matters, without shortcuts that
+skip real ingress.
+
+* Ordered Cat5e/Cat6 for PC ↔ Nexys (no switch; LAN8720 auto-MDIX);
+cable arrived and is ready for testing.
+* Goal: program `USE_ETH=1`, confirm LED15, inject Mold/ITCH traffic
+with `tools/send_itch_udp.py` per `docs/board_eth_setup.md`.
+
+Full text:
+`log/2026-08-02 - Ethernet Cable.md`.
+
+Public companion on the engineering log:
+https://tmarhguy.com/writing/2026-08-01-itch-ethernet-lab-bring-up/[ITCH Ethernet Lab Bring-Up,window=_blank]
+— preparing Nexys A7 Ethernet ingress for end-to-end Mold/ITCH UDP testing.
+
+Related bench reading from the sibling stack build:
+https://tmarhguy.com/writing/2026-08-08-understanding-udp-stack-and-connecting-to-itch/[Understanding the UDP Stack and Connecting to ITCH,window=_blank]
+— why market-data pipelines need UDP over TCP, from ITCH ingestion
+on the FPGA to the custom 100 Mbps stack
+(`github.com/tmarhguy/udp-stack`).
+
+TIP: New entries go in `log/YYYY-MM-DD - Topic.md` and get a subsection
+here. Link the file; do not paste bench speculation as fact.

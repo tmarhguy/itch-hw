@@ -1,0 +1,94 @@
+= ITCH Hardware Market-Data Parser Technical Reference Manual
+:author: Tyrone Marhguy
+:doctype: book
+:toc: left
+:toclevels: 3
+:sectnums:
+:sectnumlevels: 3
+:icons: font
+:docinfo: shared
+:imagesdir: images
+:stem: latexmath
+:experimental:
+
+// Entry point for the static technical manual.
+// Add, remove, or reorder chapters by editing the include list below.
+// Each chapter lives in sections/ as NN-name.adoc with a level-1 (==) heading.
+
+[preface]
+== ITCH hardware at a glance
+
+NASDAQ ITCH 5.0 parsed in FPGA fabric — live UDP/MoldUDP64 Ethernet
+ingress on a Nexys A7-100T, an 8-bit streaming parser, a dual-sided
+512-slot BRAM order book, and best bid / best offer (BBO) in fixed
+clock cycles. LEDs and the 7-segment display close the loop on silicon.
+
+.Nexys A7-100T on the bench — Ethernet to host, bitstream loaded
+image::a7_fpga.jpeg[Nexys A7-100T bench photo,align=center,width=448]
+
+++++
+<div style="text-align:center; margin: 1rem 0;">
+<a href="https://github.com/tmarhguy/itch-hw" target="_blank" rel="noopener" style="display:inline-block;background:#24292f;color:#ffffff;font-size:20px;font-weight:700;padding:14px 36px;border-radius:10px;text-decoration:none;margin:6px;">GitHub Repository</a>
+<a href="https://tmarhguy.com" target="_blank" rel="noopener" style="display:inline-block;background:#1d4e89;color:#ffffff;font-size:20px;font-weight:700;padding:14px 36px;border-radius:10px;text-decoration:none;margin:6px;"><img src="images/tm-logo.svg" alt="TM logo" style="height:22px;width:22px;vertical-align:-4px;margin-right:8px;border-radius:4px;" />tmarhguy.com</a>
+</div>
+++++
+
+First clean Vivado run (2026-08-02, `USE_ETH=1`, Vivado 2025.2):
+timing met at 100 MHz (WNS +1.552 ns, WHS +0.033 ns), ~2% LUT,
+sim latency 3 cycles to `record_valid` and 6 cycles to `bbo_valid`
+on the Add path.
+
+=== About this manual
+
+This is the detailed engineering reference for the project.
+It is the companion to the concise, GitHub-facing `README.md`:
+
+* `README.md` — project identity, status, and quick start.
+* `docs/` (this manual) — architecture, message formats, interfaces,
+verification, implementation, and measured behaviour.
+* `docs/*.md` — normative companions (`architecture.md`, `metrics.md`,
+`board_eth_setup.md`), linked not duplicated.
+* `log/` — dated lab journal (`2026-08-02` synthesis/bitstream,
+Ethernet cable bring-up), summarized in <<lab-journal,Lab Journal>>.
+
+Conventions used throughout:
+
+* `monospace` marks signals, file paths, commands, and literals.
+* File paths are repository-relative, e.g. `rtl/book/order_book.sv`.
+* Unmeasured values are written as `TBD (unmeasured)` — never silently estimated.
+* Numbers in <<performance,Performance>> and <<implementation,Implementation>>
+are post-route Vivado results and cocotb measurements from the 2026-08-02 build.
+
+TIP: Start with <<introduction,Introduction>> for scope and reading order,
+then <<architecture,Architecture>> for the system overview.
+
+// Chapters — reorder freely. Filenames carry a numeric prefix only so
+// directory listings stay in reading order; the visible numbers come
+// from :sectnums:, not from filenames.
+//
+// Blank lines between the includes are significant: they terminate any
+// open block (e.g. a trailing list) in the previous file so the next
+// chapter heading is always parsed as a new section.
+include::sections/01-introduction.adoc[]
+
+include::sections/02-architecture.adoc[]
+
+include::sections/03-design.adoc[]
+
+include::sections/04-interfaces.adoc[]
+
+include::sections/05-operation.adoc[]
+
+include::sections/06-verification.adoc[]
+
+include::sections/07-implementation.adoc[]
+
+include::sections/08-performance.adoc[]
+
+include::sections/09-limitations.adoc[]
+
+include::sections/10-lab-journal.adoc[]
+
+include::sections/11-about.adoc[]
+
+include::sections/12-authors.adoc[]

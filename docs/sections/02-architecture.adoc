@@ -1,0 +1,86 @@
+[#architecture]
+== Architecture
+
+System overview: what the pieces are, how bytes flow from the cable
+to the display, and where each piece lives in the tree.
+
+=== System overview
+
+All boxes run on one FPGA — no host in the hot path.
+
+.System paths at a glance
+image::system-overview.svg[RMII ingress to display pipeline,align=center,width=720]
+
+[source,text]
+----
+Ethernet / UDP  ->  Parse ITCH  ->  BBO + LEDs
+Mold-wrapped bytes  Order book      7-segment
+                    Best bid / offer
+----
+
+The three stages are deliberately asymmetric: ingress is
+line-driven and lossy-tolerant (lab UDP), parsing is cycle-exact,
+and the book is stateful with a bounded rescan fallback
+(see <<design,Design>>).
+
+=== Hierarchy
+
+Top: `rtl/top/nexys_a7_100t_top.sv` · `USE_ETH=1` · UDP port 50000.
+
+[source,text]
+----
+eth_ingress -> moldudp64_rx -> itch_hw_core -> seven_segment_ctrl
+(RMII + UDP)    (Mold)         (parse + book)    (best bid)
+----
+
+.Implemented design hierarchy on xc7a100t
+image::impl_design_diagram.png[Implemented hierarchy,align=center,width=640]
+
+.Blocks and their responsibilities
+[cols="1,2,2",options="header"]
+|===
+| Block | Module | Notes
+
+| Ingress
+| `rtl/eth/eth_ingress.sv` + `rtl/eth/udp_rx_minimal.sv`
+| RMII @ 50 MHz → CDC (`rtl/common/byte_cdc_fifo.sv`) → UDP filter @ 100 MHz; RX only
+
+| PHY link
+| `rtl/eth/lan8720_mdio.sv`
+| MDIO poll → LED15; `eth_rstn = ~rst`
+
+| Unwrap
+| `rtl/mold/moldudp64_rx.sv`
+| Mold length-prefix → raw ITCH bytes
+
+| Core
+| `rtl/top/itch_hw_core.sv` (`rtl/itch/itch_pipeline.sv` + `rtl/book/order_book.sv`)
+| `itch_byte_fsm.sv` → `itch_record_t` on `record_valid`; book → BBO on `bbo_valid`
+
+| Display
+| `rtl/display/seven_segment_ctrl.sv`
+| Best bid price on 8-digit hex 7-seg, 1 kHz digit scan
+
+| Types
+| `rtl/itch/itch_types.sv`
+| `OrderSlots=512`, `OrderIdxW=9`, Add/Execute/Cancel lengths
+|===
+
+Cocotb tests stop at `itch_hw_core` — no PHY in sim
+(see <<verification,Verification>>).
+
+=== Clocks and reset
+
+* 100 MHz system (`CLK100MHZ`, `sys_clk_pin`, 10 ns) — core, book, display.
+* 50 MHz `eth_refclk` (20 ns) — RMII nibble capture.
+* Async groups in `constraints/nexys_a7_100t.xdc`:
+`set_clock_groups -asynchronous` between `sys_clk_pin` and `eth_refclk`.
+* Reset: center button `rst` → 2-stage `rst_pipe` → `rst_sync` at 100 MHz.
+* `USE_ETH=0` ties `byte_in/byte_valid` to zero for core-only builds;
+default bitstream is `USE_ETH=1`.
+
+=== Further reading
+
+* `docs/architecture.md` — data path, order book, BBO timing
+* `docs/board_eth_setup.md` — bench wiring and LEDs
+* <<design,Design>> — byte formats behind each box in the figure
