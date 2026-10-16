@@ -5,7 +5,9 @@
 :toclevels: 3
 :sectnums:
 :sectnumlevels: 3
-:icons: font
+:icons!:
+:stylesheet!:
+:webfonts!:
 :docinfo: shared
 :imagesdir: images
 :stem: latexmath
@@ -15,16 +17,15 @@
 // Add, remove, or reorder chapters by editing the include list below.
 // Each chapter lives in sections/ as NN-name.adoc with a level-1 (==) heading.
 
+[#overview]
 [preface]
-== ITCH hardware at a glance
+== NASDAQ market data, in hardware
 
-NASDAQ ITCH 5.0 parsed in FPGA fabric — live UDP/MoldUDP64 Ethernet
-ingress on a Nexys A7-100T, an 8-bit streaming parser, a dual-sided
-512-slot BRAM order book, and best bid / best offer (BBO) in fixed
-clock cycles. LEDs and the 7-segment display close the loop on silicon.
+This design reads NASDAQ's ITCH 5.0 market-data feed in hardware, on a Digilent Nexys A7 FPGA board. ITCH is the protocol exchanges use to publish orders. Packets arrive over Ethernet. An 8-bit parser turns them into orders, a 512-slot book keeps the bids and offers, and the best bid and best offer update in a fixed number of clock cycles. LEDs and the seven-segment display show that the board is keeping up.
 
-.Nexys A7-100T on the bench — Ethernet to host, bitstream loaded
-image::a7_fpga.jpeg[Nexys A7-100T bench photo,align=center,width=448]
+++++
+<!-- docs-hero -->
+++++
 
 ++++
 <div style="text-align:center; margin: 1rem 0;">
@@ -49,7 +50,7 @@ verification, implementation, and measured behaviour.
 * `docs/*.md` — normative companions (`architecture.md`, `metrics.md`,
 `board_eth_setup.md`), linked not duplicated.
 * `log/` — dated lab journal (`2026-08-02` synthesis/bitstream,
-Ethernet cable bring-up), summarized in <<lab-journal,Lab Journal>>.
+Ethernet cable bring-up), in the <<engineering-log,engineering log>>.
 
 Conventions used throughout:
 
@@ -87,7 +88,10 @@ include::sections/08-performance.adoc[]
 
 include::sections/09-limitations.adoc[]
 
-include::sections/10-lab-journal.adoc[]
+ifdef::has-logs[]
+include::sections/generated/engineering-log.adoc[]
+
+endif::[]
 
 include::sections/11-about.adoc[]
 

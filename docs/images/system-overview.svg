@@ -1,4 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="720" height="200" viewBox="0 0 720 200" font-family="sans-serif">
+  <title>System overview</title>
+  <desc>Pipeline from RMII ingress through mold unwrap, ITCH parse, and order book to display on the 100 MHz core.</desc>
   <defs>
     <style>
       .box { fill: #f6f8fa; stroke: #1d4e89; stroke-width: 2; rx: 8; }

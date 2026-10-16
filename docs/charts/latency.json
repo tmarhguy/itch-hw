@@ -1,0 +1,25 @@
+{
+  "title": "Functional latency",
+  "subtitle": "cocotb at 100 MHz, itch_hw_core only",
+  "ylabel": "cycles",
+  "categories": [
+    "Byte to record_valid",
+    "record_valid to BBO"
+  ],
+  "series": [
+    {
+      "name": "Measured",
+      "values": [
+        3,
+        6
+      ]
+    },
+    {
+      "name": "Budget",
+      "values": [
+        5,
+        6
+      ]
+    }
+  ]
+}

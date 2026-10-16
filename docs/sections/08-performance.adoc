@@ -119,6 +119,16 @@ On hardware the target remains under 10 cycles on the Add path for
 parse + BBO combined — sim and silicon to be reconciled after bench
 traffic.
 
+.Resource use on the 100T, from the utilization table above
+image::utilization.svg[Post-route utilization percents for LUT, flip-flops, BRAM, I/O, and BUFG,width=800]
+
+.cocotb latency against the stated budgets
+image::latency.svg[Measured cycles versus budget for record_valid and the Add-path BBO,width=800]
+
+The rescan path is a separate bound, at most 512 cycles, and is not on
+this chart. Used LUT and flip-flop counts are still the em dash in the
+table: only the percents were recorded.
+
 === How to refresh
 
 .Vivado (timing and utilization)

@@ -1,0 +1,28 @@
+{
+  "name": "ITCH Parser",
+  "label": "Documentation",
+  "title": "NASDAQ market data, in hardware",
+  "description": "A hardware parser for NASDAQ's ITCH 5.0 market-data feed, running on a Digilent Nexys A7 FPGA board.",
+  "url": "",
+  "image": "",
+  "about": "#about",
+  "repository": "https://github.com/tmarhguy/itch-hw",
+  "website": "",
+  "source": "https://github.com/tmarhguy/itch-hw/blob/main/docs/index.adoc",
+  "groups": {
+    "0": "Documentation",
+    "12": "Author"
+  },
+  "branch": "main",
+  "hero": {
+    "image": "images/a7_fpga.jpeg",
+    "alt": "Nexys A7-100T bench photo \u2014 Ethernet to host, bitstream loaded",
+    "caption": "Nexys A7-100T on the bench \u2014 Ethernet to host, bitstream loaded"
+  },
+  "accent": "#1d4e89",
+  "accentDark": "#93c5fd",
+  "nested": [
+    "engineering-log"
+  ],
+  "logs": "log"
+}

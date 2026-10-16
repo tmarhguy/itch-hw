@@ -1,0 +1,74 @@
+[#engineering-log]
+== Engineering log
+
+Each note below is the original project log, in chronological order.
+Open the arrow in the sidebar to jump to an entry.
+
+[#log-2026-08-02-ethernet-cable]
+=== 2026-08-02 — Ethernet cable — lab bring-up
+
+++++
+<div class="log-entry">
+<p><strong>Date:</strong> 2026-08-02</p>
+<h4>Context</h4>
+<p>In my understanding of ITCH, market data should flow continuously into the system so the FPGA can act on it. The end-to-end path matters: <strong>data in → decision → data out</strong>, without shortcuts that skip real ingress.</p>
+<h4>Update</h4>
+<p>Ordered an Ethernet cable for the Nexys A7; it arrived and is ready for testing.</p>
+<h4>Goal</h4>
+<p>Exercise the full workflow on hardware:</p>
+<ol><li><strong>Data in</strong> — live UDP / Mold-wrapped ITCH over the RJ45 link</li><li><strong>Decision</strong> — parse messages, maintain the order book, update BBO</li><li><strong>Data out</strong> — visible feedback on the board (LEDs, 7-segment) as proof the pipeline ran</li></ol>
+<p>Next step: build with <code>USE_ETH=1</code>, program the board, and send test traffic with <code>tools/send_itch_udp.py</code> (see <code>docs/board_eth_setup.md</code>).</p>
+</div>
+++++
+
+[#log-2026-08-02-successful-synthesis-implementation-bitstream]
+=== 2026-08-02 — First clean Vivado build — synthesis, implementation, bitstream
+
+++++
+<div class="log-entry">
+<p><strong>Date:</strong> 2026-08-02</p>
+<p><strong>Target:</strong> Digilent Nexys A7-100T · <code>xc7a100tcsg324-1</code> · <code>USE_ETH=1</code></p>
+<p><strong>Toolchain:</strong> Vivado 2025.2</p>
+<h4>Context</h4>
+<p>After several RTL iterations — Ethernet ingress, MoldUDP64 unwrap, streaming ITCH parser, dual-sided order book — the design finally closed timing and produced a bitstream. This is the first end-to-end Vivado run for the live UDP path (not just the cocotb core).</p>
+<h4>Design runs</h4>
+<p><code>synth_1</code> and <code>impl_1</code> both completed with green checkmarks. Post-route timing is clean:</p>
+<table><thead><tr><th>Metric</th><th>Value</th></tr></thead><tbody><tr><td>WNS</td><td><strong>+1.552 ns</strong></td></tr><tr><td>TNS</td><td>0.000 ns</td></tr><tr><td>WHS</td><td><strong>+0.033 ns</strong></td></tr><tr><td>THS</td><td>0.000 ns</td></tr><tr><td>Failed routes</td><td>0</td></tr><tr><td>Total power (est.)</td><td>0.117 W</td></tr></tbody></table>
+<p align="center">
+  <img src="images/logs/log-2026-08-02-successful-synthesis-implementation-bitstream-design-run-succ-synth.png" alt="Vivado Design Runs — synth_1 and impl_1 complete" width="720" />
+</p>
+<p align="center"><em>Design Runs — synthesis and write_bitstream both complete</em></p>
+<h4>Project summary</h4>
+<p>Dashboard at a glance: timing closed, light utilization on the 100T fabric.</p>
+<table><thead><tr><th>Resource</th><th>Utilization</th></tr></thead><tbody><tr><td>I/O</td><td>20%</td></tr><tr><td>BUFG</td><td>6%</td></tr><tr><td>LUT</td><td>2%</td></tr><tr><td>FF</td><td>1%</td></tr><tr><td>BRAM</td><td>1%</td></tr><tr><td>LUTRAM</td><td>1%</td></tr></tbody></table>
+<p align="center">
+  <img src="images/logs/log-2026-08-02-successful-synthesis-implementation-bitstream-proj-summ-util.png" alt="Vivado project summary — timing, utilization, power" width="720" />
+</p>
+<p align="center"><em>Project summary — WNS +1.552 ns, WHS +0.033 ns, ~2% LUT</em></p>
+<h4>Synthesized design</h4>
+<p>Package view confirms RMII Ethernet pins (<code>eth_mdc</code>, <code>eth_mdio</code>, <code>eth_rxd</code>, <code>eth_crs_dv</code>, …) and status LEDs mapped to the Nexys A7 ballout.</p>
+<p align="center">
+  <img src="images/logs/log-2026-08-02-successful-synthesis-implementation-bitstream-synth-design-diagram.png" alt="Vivado package view — Ethernet and LED pin assignments" width="720" />
+</p>
+<p align="center"><em>Synthesized design — package pins for Ethernet and LEDs</em></p>
+<h4>Implemented hierarchy</h4>
+<p>Post-route block diagram shows the full stack on silicon:</p>
+<ul><li><code>nexys_a7_100t_top</code></li></ul>
+<p>- <code>gen_eth.u_eth</code> → <code>eth_ingress</code> (RMII + UDP) - <code>gen_eth.u_mold</code> → <code>moldudp64_rx</code> - <code>u_core</code> → <code>itch_hw_core</code> (parser + order book + BBO) - <code>u_display</code> → <code>seven_segment_ctrl</code></p>
+<p align="center">
+  <img src="images/logs/log-2026-08-02-successful-synthesis-implementation-bitstream-impl-design-diagram.png" alt="Implemented design block diagram — eth ingress, mold, itch core, display" width="720" />
+</p>
+<p align="center"><em>Implemented design — full hierarchy placed on xc7a100t</em></p>
+<h4>Bitstream ready</h4>
+<p>Bitstream artifact: <code>itch-hw.runs/impl_1/nexys_a7_100t_top.bit</code></p>
+<p>Hardware Manager sees the Digilent JTAG target (<code>xc7a100t_0</code>) and is ready to program.</p>
+<p align="center">
+  <img src="images/logs/log-2026-08-02-successful-synthesis-implementation-bitstream-bitstream-dialog.png" alt="Vivado Program Device dialog — nexys_a7_100t_top.bit" width="520" />
+</p>
+<p align="center"><em>Program Device — bitstream generated, board connected</em></p>
+<h4>What's next</h4>
+<p>Ethernet cable is on the bench. Next step: program the board, confirm <strong>LED15</strong> (link up), and inject Mold/ITCH test traffic with `tools/send_itch_udp.py.</p>
+<p>As the problem domain becomes clearer, the decision logic will evolve. The goal is to let market-structure understanding drive the design, not FPGA friction — the fabric path is now proven.</p>
+</div>
+++++
+
